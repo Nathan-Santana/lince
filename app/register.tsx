@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
+import { TouchableOpacity } from 'react-native';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -15,12 +16,14 @@ export default function RegisterScreen() {
       alert('Preencha todos os campos!');
       return;
     }
-    // Implementar a navegação para '/dashboard'
-    // router.push('/dashboard');
+    router.push('/dashboard');
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <TouchableOpacity onPress={() => router.back()} >
+              <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
+      </TouchableOpacity>
       <Text style={[styles.title, { color: theme.text }]}>Cadastro</Text>
 
       <View style={styles.inputContainer}>
@@ -62,9 +65,11 @@ export default function RegisterScreen() {
 
       <Text 
         style={[styles.link, { color: theme.primary }]}
-        //implementar a volta pro login
+        onPress ={() => router.push('/login')}
       >
+        
         Já tem uma conta? Faça login
+       
       </Text>
     </View>
   );

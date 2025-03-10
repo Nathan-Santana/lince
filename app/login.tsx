@@ -3,6 +3,9 @@ import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
+import { TouchableOpacity } from 'react-native';
+
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -14,12 +17,19 @@ export default function LoginScreen() {
       alert('Preencha todos os campos!');
       return;
     }
-    // Implementar a navegação para '/dashboard'
+    router.push('/dashboard');
+    
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+
+      <TouchableOpacity onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
+      </TouchableOpacity>
+
       <Text style={[styles.title, { color: theme.text }]}>Login</Text>
+      
 
       <View style={styles.inputContainer}>
         <MaterialIcons name="email" size={24} color={theme.placeholder} />
@@ -49,7 +59,7 @@ export default function LoginScreen() {
 
       <Text 
         style={[styles.link, { color: theme.primary }]}
-        //implementar a rota pra tela de cadastro}
+        onPress ={() => router.push('/register')}
       >
         Não tem uma conta? Cadastre-se
       </Text>

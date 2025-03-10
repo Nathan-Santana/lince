@@ -21,8 +21,7 @@ export default function ReportsScreen() {
             <Button
               title="Ver Detalhes"
               onPress={() => {
-                // Implementar '/reports/[id]'
-                // router.push(`/reports/${item.id}`);
+                router.push(`/reports/${item.id}`);
               }}
             />
           </View>

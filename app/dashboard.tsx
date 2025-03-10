@@ -14,16 +14,15 @@ export default function DashboardScreen() {
       <Button
         title="Ver Relatórios"
         onPress={() => {
-          // Implementar '/reports'
-          // router.push('/reports');
+          router.push('/reports')
+  
         }}
       />
 
       <Button
         title="Configurações"
         onPress={() => {
-          // Implementar '/settings' como modal
-          // router.push('/settings');
+          router.push('/settings');
         }}
       />
     </View>

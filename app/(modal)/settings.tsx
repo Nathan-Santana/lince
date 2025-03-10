@@ -1,6 +1,6 @@
 import { View, Text, Button, StyleSheet, Switch } from 'react-native';
 import { router } from 'expo-router';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SettingsScreen() {
     const { theme, isDark, toggleTheme } = useTheme();
@@ -24,7 +24,7 @@ export default function SettingsScreen() {
                 title="Fechar"
                 onPress={() => {
                 // Implementar o fechamento do modal
-                // router.back();
+                router.back();
                 }}
             />
         </View>
