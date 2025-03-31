@@ -3,6 +3,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 
 export default function ReportDetailScreen() {
   const { id } = useLocalSearchParams(); 
+  
 
   const reportData: { [key: string]: { title: string; details: string } } = {
     '1': { title: 'Uso Diário', details: 'Instagram: 1h 30m, WhatsApp: 1h' },
@@ -13,6 +14,7 @@ export default function ReportDetailScreen() {
 
   return (
     <View style={styles.container}>
+    
       <Text style={styles.title}>{report.title}</Text>
       <Text>{report.details}</Text>
 

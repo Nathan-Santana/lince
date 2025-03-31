@@ -1,14 +1,23 @@
 import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { MaterialIcons } from '@expo/vector-icons';
+
 
 const reports = [
   { id: '1', title: 'Uso Diário', description: 'Instagram: 1h 30m, WhatsApp: 1h' },
   { id: '2', title: 'Uso Semanal', description: 'Instagram: 10h, WhatsApp: 8h' },
 ];
 
+
 export default function ReportsScreen() {
+  const { theme } = useTheme();
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
+      </TouchableOpacity>
       <Text style={styles.title}>Relatórios</Text>
       
       <FlatList

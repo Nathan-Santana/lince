@@ -23,7 +23,7 @@ export default function SettingsScreen() {
             <Button
                 title="Fechar"
                 onPress={() => {
-                // Implementar o fechamento do modal
+                
                 router.back();
                 }}
             />

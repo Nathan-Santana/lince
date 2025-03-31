@@ -1,9 +1,18 @@
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import { TouchableOpacity } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function DashboardScreen() {
+  const { theme } = useTheme();
   return (
     <View style={styles.container}>
+      
+      <TouchableOpacity onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Dashboard</Text>
 
       <View style={styles.card}>
