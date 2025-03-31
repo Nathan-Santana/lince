@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "464882599358",
+    "firebase_url": "https://lince-monitor-default-rtdb.firebaseio.com",
+    "project_id": "lince-monitor",
+    "storage_bucket": "lince-monitor.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:464882599358:android:761cb4d68c0a1c778b65ef",
+        "android_client_info": {
+          "package_name": "com.anonymous.lince"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu-kTuoYCG_6EmkvBZc5nTRYU7wfeCEmI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
