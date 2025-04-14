@@ -6,24 +6,40 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useTheme } from '../../context/ThemeContext';
 import { MaterialIcons } from '@expo/vector-icons';
 
+
 export default function ParentDashboard() {
   const params = useLocalSearchParams();
   const deviceId = typeof params.deviceId === 'string' ? params.deviceId : 'deviceIdTeste123';
   const [usageData, setUsageData] = useState<any[]>([]);
   const { theme } = useTheme();
 
+  //useEffect(() => {
+    //if (!deviceId) return;
+
+    //const unsubscribe = onSnapshot(doc(db, 'usageData', deviceId), (docSnap) => {
+      //const data = docSnap.data();
+      //if (data && data.appUsage) {
+      //  setUsageData(data.appUsage);
+      //}
+    //});
+
+    //return () => unsubscribe();
+  //}, [deviceId]);
   useEffect(() => {
-    if (!deviceId) return;
-
-    const unsubscribe = onSnapshot(doc(db, 'usageData', deviceId), (docSnap) => {
-      const data = docSnap.data();
-      if (data && data.appUsage) {
-        setUsageData(data.appUsage);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [deviceId]);
+    const mockData = [
+      {
+        packageName: 'com.instagram.android',
+        totalTimeInForeground: 3600000,
+      },
+      {
+        packageName: 'com.whatsapp',
+        totalTimeInForeground: 2700000,
+      },
+    ];
+  
+    setUsageData(mockData);
+  }, []);
+  
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
