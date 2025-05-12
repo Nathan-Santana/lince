@@ -17,7 +17,7 @@ export default function LoginScreen() {
       alert('Preencha todos os campos!');
       return;
     }
-    router.push('/dashboard');
+    router.push('/ParentDashboard');
     
   };
 

@@ -1,29 +1,55 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { TouchableOpacity } from 'react-native';
+import { auth, db } from '../services/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { theme } = useTheme();
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!name || !email || !password) {
-      alert('Preencha todos os campos!');
+      Alert.alert('Erro', 'Preencha todos os campos!');
       return;
     }
-    router.push('/dashboard');
+
+    try {
+      setLoading(true);
+      
+      const user = auth.currentUser!;
+      const deviceId = await getOrCreateDeviceId();
+      await setDoc(doc(db, 'users', user.uid), {
+        displayName: user.displayName,
+        linkedDeviceId: deviceId
+      });
+      
+      router.replace('/(tabs)');
+      
+    } catch (error) {
+      let errorMessage = 'Falha no cadastro';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Erro', errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <TouchableOpacity onPress={() => router.back()} >
-              <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
+      <TouchableOpacity onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color={theme.primary} />
       </TouchableOpacity>
+
       <Text style={[styles.title, { color: theme.text }]}>Cadastro</Text>
 
       <View style={styles.inputContainer}>
@@ -61,15 +87,18 @@ export default function RegisterScreen() {
         />
       </View>
 
-      <Button title="Cadastrar" onPress={handleRegister} color={theme.primary} />
+      <Button 
+        title={loading ? "Cadastrando..." : "Cadastrar"} 
+        onPress={handleRegister} 
+        color={theme.primary}
+        disabled={loading}
+      />
 
       <Text 
         style={[styles.link, { color: theme.primary }]}
-        onPress ={() => router.push('/login')}
+        onPress={() => router.push('/login')}
       >
-        
         Já tem uma conta? Faça login
-       
       </Text>
     </View>
   );
@@ -104,3 +133,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+function getOrCreateDeviceId() {
+  throw new Error('Function not implemented.');
+}

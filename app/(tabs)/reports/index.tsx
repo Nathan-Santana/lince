@@ -1,7 +1,7 @@
 import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../../context/ThemeContext';
 import { MaterialIcons } from '@expo/vector-icons';
 
 

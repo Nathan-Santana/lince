@@ -1,8 +1,8 @@
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, Button } from 'react-native';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db, auth } from '../services/firebase';
-import UsageProgress from '../components/usageProgress';
+import { db, auth } from '../../../services/firebase';
+import UsageProgress from '../../../components/usageProgress';
 import { FirebaseError } from 'firebase/app';
 
 export default function DashboardScreen() {
