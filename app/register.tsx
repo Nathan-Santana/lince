@@ -7,42 +7,51 @@ import { TouchableOpacity } from 'react-native';
 import { auth, db } from '../services/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { Picker } from '@react-native-picker/picker';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<'pai' | 'crianca'>('pai');
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!name || !email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos!');
-      return;
-    }
+  if (!name || !email || !password) {
+    Alert.alert('Erro', 'Preencha todos os campos!');
+    return;
+  }
 
-    try {
-      setLoading(true);
-      
-      const user = auth.currentUser!;
-      const deviceId = await getOrCreateDeviceId();
-      await setDoc(doc(db, 'users', user.uid), {
-        displayName: user.displayName,
-        linkedDeviceId: deviceId
-      });
-      
-      router.replace('/(tabs)');
-      
-    } catch (error) {
-      let errorMessage = 'Falha no cadastro';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      Alert.alert('Erro', errorMessage);
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    
+    await updateProfile(user, { displayName: name });
+
+    
+    await setDoc(doc(db, 'users', user.uid), {
+      displayName: name,
+      email: email,
+      userType: userType,
+    });
+
+    router.replace('/(tabs)');
+  } catch (error) {
+    let errorMessage = 'Falha no cadastro';
+    if (error instanceof Error) {
+      errorMessage = error.message;
     }
-  };
+    Alert.alert('Erro', errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -86,6 +95,18 @@ export default function RegisterScreen() {
           secureTextEntry
         />
       </View>
+      <View style={styles.inputContainer}>
+
+  <Text style={{ color: theme.text, marginBottom: 10 }}>Tipo de usuário</Text>
+  <Picker
+    selectedValue={userType}
+    style={{ flex: 1, backgroundColor: theme.inputBackground, color: theme.text }}
+    onValueChange={(itemValue) => setUserType(itemValue)}
+  >
+    <Picker.Item label="Pai" value="pai" />
+    <Picker.Item label="Criança" value="crianca" />
+  </Picker>
+  </View>
 
       <Button 
         title={loading ? "Cadastrando..." : "Cadastrar"} 

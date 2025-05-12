@@ -4,6 +4,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '../context/ThemeContext';
 import { TouchableOpacity } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../services/firebase'; 
 
 
 
@@ -12,14 +16,40 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const { theme } = useTheme();
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      alert('Preencha todos os campos!');
-      return;
+  const handleLogin = async () => {
+  if (!email || !password) {
+    alert('Preencha todos os campos!');
+    return;
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const docRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const userType = docSnap.data().userType;
+
+      if (userType === 'pai') {
+        router.replace('/ParentDashboard');
+      } else if (userType === 'crianca') {
+        router.replace('/TokenDashboard');
+ 
+      } else {
+        alert('Tipo de usuário desconhecido.');
+      }
+    } else {
+      alert('Usuário não encontrado no banco de dados.');
     }
-    router.push('/ParentDashboard');
-    
-  };
+  } catch (error) {
+    let errorMessage = 'Erro ao fazer login.';
+    if (error instanceof Error) errorMessage = error.message;
+    alert(errorMessage);
+  }
+};
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
