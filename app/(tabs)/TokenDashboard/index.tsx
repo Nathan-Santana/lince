@@ -5,6 +5,8 @@ import { useTheme } from '../../../context/ThemeContext';
 import { auth, db } from '../../../services/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import * as Crypto from 'expo-crypto';
+import { ProgressBar } from 'react-native-paper';
+import * as Clipboard from 'expo-clipboard';
 
 export default function TokenDashboard() {
   const { theme } = useTheme();
@@ -12,7 +14,7 @@ export default function TokenDashboard() {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // SUA FUNÇÃO ORIGINAL (com pequenos ajustes)
+  
   const generateToken = async (deviceId: string) => {
     try {
       const randomBytes = await Crypto.getRandomBytesAsync(32);
@@ -75,15 +77,34 @@ export default function TokenDashboard() {
         {isLoading ? (
           <ActivityIndicator size="large" color={theme.primary} />
         ) : (
-          <Text style={[styles.tokenText, { color: theme.primary }]}>
-            {token || "------"}
-          </Text>
+              <TouchableOpacity
+        onPress={() => {
+          if (token) {
+            Clipboard.setStringAsync(token);
+            Alert.alert("Token copiado!", "Cole onde for necessário.");
+          }
+        }}
+      >
+        <Text style={[styles.tokenText, { color: theme.primary }]}>
+          {token || "------"}
+        </Text>
+</TouchableOpacity>
+
         )}
         {timeLeft > 0 && (
-          <Text style={[styles.timerText, { color: theme.text }]}>
-            Expira em: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-          </Text>
-        )}
+      <>
+        <Text style={[styles.timerText, { color: theme.text }]}>
+          Expira em: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+        </Text>
+
+        <ProgressBar 
+          progress={timeLeft / 300} 
+          color={theme.primary}
+          style={{ height: 8, borderRadius: 4, marginTop: 10, width: '90%' }}
+        />
+      </>
+    )}
+       
       </View>
 
       {/* Botão de ação */}
