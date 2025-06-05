@@ -1,3 +1,4 @@
+// tsconfig.json (na raiz do seu projeto)
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
@@ -7,11 +8,18 @@
         "./*"
       ]
     }
+    // Outras compilerOptions podem estar aqui
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [ // GARANTA QUE ESTA LINHA ESTEJA PRESENTE E INCLUA node_modules
+    "node_modules",
+    "babel.config.js", // Opcional, mas comum
+    "metro.config.js", // Opcional, mas comum
+    "jest.config.js"   // Opcional, mas comum
   ]
 }
