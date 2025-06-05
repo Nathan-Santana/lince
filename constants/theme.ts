@@ -1,4 +1,10 @@
+import { ColorValue } from "react-native";
+
 interface ITheme {
+    backgroundComposed: ColorValue | undefined;
+    secondary: ColorValue | undefined;
+    buttonText: ColorValue | undefined;
+    textMuted: ColorValue | undefined;
     dark: any;
     background: string;
     text: string;
@@ -15,7 +21,11 @@ export const lightTheme: ITheme = {
   border: '#CCCCCC',
   primary: '#007BFF',
   placeholder: '#666666',
-  dark: undefined
+  dark: undefined,
+  buttonText: undefined,
+  textMuted: undefined,
+  secondary: undefined,
+  backgroundComposed: undefined
 };
   
 export const darkTheme: ITheme = {
@@ -25,7 +35,11 @@ export const darkTheme: ITheme = {
   border: '#444444',
   primary: '#0A84FF',
   placeholder: '#888888',
-  dark: undefined
+  dark: undefined,
+  buttonText: undefined,
+  textMuted: undefined,
+  secondary: undefined,
+  backgroundComposed: undefined
 };
   
 export type Theme = ITheme;

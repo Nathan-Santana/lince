@@ -1,125 +1,144 @@
-// app/_layout.tsx
-import { ThemeProvider, useTheme } from '../context/ThemeContext'; //
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Slot, SplashScreen, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect, useState } from 'react'; // Adicionado useState
 import 'react-native-reanimated';
-import { StatusBar } from 'expo-status-bar';
-import { auth, db } from '../services/firebase'; //
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { View, ActivityIndicator } from 'react-native'; 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider} from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { ThemeContextProvider } from '@/context/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
-// Este AppLoadingScreen agora será renderizado por AppContent,
-// que já está dentro do ThemeProvider.
-const ThemedAppLoadingScreen = () => {
-  const { theme } = useTheme(); 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
-      <ActivityIndicator size="large" color={theme.primary} />
-    </View>
-  );
-};
-
-function AppContent() {
-  const [fontsLoaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [userTypeLoading, setUserTypeLoading] = useState(false);
-
+function RootLayoutNav() {
   const router = useRouter();
   const segments = useSegments();
-  const { isDark } = useTheme(); 
+  const { currentUser, isLoading: isAuthLoading, userType } = useAuth(); // Renomeado isLoading para evitar conflito
+  const [isRouterReady, setIsRouterReady] = useState(false); // Novo estado para prontidão do router
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setAuthLoading(false);
-    });
-    return () => unsubscribe();
+    // Dá um pequeno tempo para o roteador se inicializar completamente
+    const timer = setTimeout(() => {
+      console.log("RootLayoutNav: Router considered ready.");
+      setIsRouterReady(true);
+    }, 100); // 100ms de delay, ajuste se necessário
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    let isMounted = true; // Flag para verificar se o componente está montado
+    console.log(
+      `RootLayoutNav effect: isAuthLoading=${isAuthLoading}, isRouterReady=${isRouterReady}, currentUser=${!!currentUser}, userType=${userType}, segments=${segments.join('/')}`
+    );
 
-    if (authLoading || !fontsLoaded || userTypeLoading) {
+    if (isAuthLoading || !isRouterReady) {
+      console.log("RootLayoutNav: Auth not loaded OR Router not ready. Aborting redirection.");
       return;
-  }
+    }
 
-    // Garante que segments é um array antes de acessar length e índices
-    const segArr = Array.isArray(segments) ? segments : [];
-    const isUserAtRootHomepage = segArr.length === 0;
-    const isUserInLoginPage = segArr.length > 0 && segArr[0] === 'login';
-    const isUserInRegisterPage = segArr.length > 0 && segArr[0] === 'register';
+    const currentTopLevelSegment = segments[0];
+    const currentSecondLevelSegment = segments.length > 1 ? segments[1] : null;
 
-  if (currentUser) {
-    if (isUserAtRootHomepage || isUserInLoginPage || isUserInRegisterPage) {
-      if (isMounted) setUserTypeLoading(true);
-      getDoc(doc(db, 'users', currentUser.uid))
-        .then((docSnap) => {
-          if (!isMounted) return;
-          if (docSnap.exists()) {
-            const userType = docSnap.data()?.userType;
-            if (userType === 'pai') {
-              router.replace('/(tabs)/ParentDashboard');
-            } else if (userType === 'crianca') {
-              router.replace('/(tabs)/TokenDashboard');
-            } else {
-              console.warn('Tipo de usuário desconhecido, deslogando.');
-              auth.signOut(); // APENAS signOut, o useEffect tratará do redirect
-            }
-          } else {
-            console.warn('Usuário logado sem registro no Firestore, deslogando.');
-            auth.signOut(); // APENAS signOut
-          }
-        })
-        .catch((error) => {
-          if (!isMounted) return;
-          console.error("Erro ao buscar tipo de usuário:", error);
-          auth.signOut(); // APENAS signOut
-        })
-        .finally(() => {
-          if (isMounted) setUserTypeLoading(false);
-        });
+    if (currentUser && userType) { // Garante que userType também esteja definido
+      console.log(`RootLayoutNav: User logged in. Type: ${userType}. Path: ${segments.join('/')}`);
+      let targetPath: string | null = null;
+      let shouldRedirect = true;
+
+      if (userType === 'pai') {
+        targetPath = '/(tabs)/ParentDashboard';
+        if (currentTopLevelSegment === '(tabs)' && (currentSecondLevelSegment === 'ParentDashboard' || currentSecondLevelSegment === 'reports')) {
+          shouldRedirect = false;
+        }
+      } else if (userType === 'crianca') {
+        targetPath = '/(tabs)/TokenDashboard';
+        if (currentTopLevelSegment === '(tabs)' && currentSecondLevelSegment === 'TokenDashboard') {
+          shouldRedirect = false;
+        }
       }
-    } else {
-      // Usuário NÃO LOGADO
-      if (!isUserAtRootHomepage && !isUserInLoginPage && !isUserInRegisterPage) {
-        if (isMounted) router.replace('/'); // Redireciona para app/index.tsx (sua homepage)
+      // Se estiver na modal de configurações, não redirecionar
+      if (currentTopLevelSegment === '(modal)' && currentSecondLevelSegment === 'settings') {
+          shouldRedirect = false;
+      }
+
+
+      if (targetPath && shouldRedirect) {
+        const targetSegments = targetPath.substring(1).split('/');
+        const isAlreadyOnTargetPath = segments.length === targetSegments.length && segments.every((seg, i) => seg === targetSegments[i]);
+        if (!isAlreadyOnTargetPath) {
+          console.log(`RootLayoutNav: Redirecting logged-in user to ${targetPath}.`);
+          router.replace(targetPath as any);
+        } else {
+          console.log(`RootLayoutNav: User already on target path ${targetPath}.`);
+        }
+      } else if (targetPath && !shouldRedirect) {
+         console.log(`RootLayoutNav: User on allowed path, no redirect for ${userType}. Path: ${segments.join('/')}`);
+      }
+
+    } else { // No currentUser (usuário não logado)
+      console.log(`RootLayoutNav: User not logged in. Path: ${segments.join('/')}`);
+      const isAuthScreenOrInitial =
+        currentTopLevelSegment === 'login' ||
+        currentTopLevelSegment === 'register' ||
+        (currentTopLevelSegment as string) === 'index' ||
+        currentTopLevelSegment === undefined ||
+        (currentTopLevelSegment as string) === '';
+
+      if (!isAuthScreenOrInitial) {
+        console.log("RootLayoutNav: User not logged in and not on auth/initial screen. Redirecting to /.");
+        router.replace('/' as any);
+      } else {
+         console.log("RootLayoutNav: User not logged in but on auth/initial screen. No redirect.");
       }
     }
-  }, [currentUser, authLoading, fontsLoaded, userTypeLoading, segments, router]);
+  }, [currentUser, userType, isAuthLoading, segments, router, isRouterReady]);
 
 
-  if (authLoading || !fontsLoaded || userTypeLoading) {
-    return <ThemedAppLoadingScreen />;
+  if (isAuthLoading && !isRouterReady) { // Mostrar splash/loading apenas se ambos não estiverem prontos
+    return null; // Ou seu componente de SplashScreen
   }
 
   return (
-    <>
-      <StatusBar style={isDark ? "light" : "dark"} />
-      <Slot />
-    </>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(modal)/settings" options={{ presentation: 'modal', title: "Configurações" }} />
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
 
 export default function RootLayout() {
-  // O RootLayout mais externo apenas configura o ThemeProvider.
-  // Toda a lógica de estado, hooks e renderização condicional acontece em AppContent.
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <ThemeContextProvider>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <RootLayoutNav />
+            </ThemeProvider>
+          </ThemeContextProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

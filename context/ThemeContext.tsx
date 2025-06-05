@@ -11,7 +11,7 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType>({} as ThemeContextType);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export const ThemeContextProvider = ({ children }: { children: React.ReactNode }) => {
   const colorScheme = Appearance.getColorScheme();
   const [isDark, setIsDark] = useState(colorScheme === 'dark');
 
